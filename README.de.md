@@ -2983,3 +2983,960 @@ sollte kontrolliert werden, um unnötige Subscriptions oder memory leaks zu
 vermeiden.
 
 </details>
+
+<details>
+<summary>76. Wie funktionieren Animationen in Flutter?</summary>
+
+#### Flutter
+
+Animationen in Flutter funktionieren durch sequenzielle Wertänderungen über die
+Zeit und das Neuzeichnen der UI bei jedem Frame.
+
+#### Grundidee:
+
+1. **Es gibt einen Startwert**
+2. **Es gibt einen Endwert**
+3. **Flutter berechnet Zwischenzustände**
+4. **Die UI wird Frame für Frame aktualisiert**
+
+#### Hauptbestandteile:
+
+1. **`AnimationController`** - steuert die Animationszeit
+2. **`Tween`** - definiert den Wertebereich
+3. **`CurvedAnimation`** - definiert die Bewegungskurve
+4. **Builder oder Animated widget** - aktualisiert die UI
+
+#### Zwei Hauptansätze:
+
+1. **Implicit animations** - einfache Animationen ohne manuelle Kontrolle
+2. **Explicit animations** - volle Kontrolle über controller
+
+#### Praktische Bedeutung:
+
+Flutter hat ein sehr starkes animation system, weil die UI mit eigener
+rendering engine gezeichnet wird. Das bietet viel Flexibilität für smooth
+transitions und custom motion.
+
+</details>
+
+<details>
+<summary>77. Was ist `AnimationController`?</summary>
+
+#### Flutter
+
+`AnimationController` ist ein Objekt, das den Lebenszyklus einer explicit
+Animation steuert: Start, Stopp, Reverse und aktuellen Fortschritt.
+
+#### Was er macht:
+
+1. **Speichert die Animationsdauer**
+2. **Bewegt sich auf einer Werteskala, meist von `0.0` bis `1.0`**
+3. **Erlaubt `forward()`, `reverse()`, `repeat()`**
+
+#### Beispiel:
+
+```dart
+late final AnimationController controller;
+
+@override
+void initState() {
+  super.initState();
+  controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 300),
+  );
+}
+```
+
+#### Wichtig:
+
+`AnimationController` sollte in der Regel mit `dispose()` freigegeben werden,
+sonst können Ressourcenlecks entstehen.
+
+</details>
+
+<details>
+<summary>78. Was ist Tween-Animation?</summary>
+
+#### Flutter
+
+Tween-Animation ist eine Animation, bei der sich ein Wert sanft zwischen zwei
+Punkten verändert: `begin` und `end`.
+
+#### Grundidee:
+
+Tween beschreibt, **wie Werte interpoliert werden**.
+
+#### Beispiel:
+
+```dart
+final animation = Tween<double>(
+  begin: 0,
+  end: 100,
+).animate(controller);
+```
+
+#### Was über Tween animiert werden kann:
+
+1. **Zahlen**
+2. **Farben**
+3. **Abstände**
+4. **Größen**
+5. **Alignment**
+
+#### Praktische Bedeutung:
+
+Tween startet die Animation nicht selbst. Es beschreibt nur den Übergang der
+Werte, und `AnimationController` bewegt diesen Übergang.
+
+</details>
+
+<details>
+<summary>79. Was ist `vsync`?</summary>
+
+#### Flutter
+
+`vsync` ist ein Mechanismus zur Synchronisierung von Animationen mit der
+Bildschirm-Aktualisierungsrate.
+
+#### Wofür es nötig ist:
+
+1. **Damit keine Frames berechnet werden, wenn das Widget nicht sichtbar ist**
+2. **Damit unnötige Last reduziert wird**
+3. **Damit Animationen mit der rendering pipeline synchron bleiben**
+
+#### Wie es aussieht:
+
+In `State` wird häufig `SingleTickerProviderStateMixin` verwendet und `this` an
+`AnimationController` übergeben.
+
+```dart
+controller = AnimationController(
+  vsync: this,
+  duration: const Duration(milliseconds: 300),
+);
+```
+
+#### Praktische Bedeutung:
+
+Ohne `vsync` könnten Animationen weiterlaufen, auch wenn sie nicht gerendert
+werden müssen, was die Performance verschlechtert.
+
+</details>
+
+<details>
+<summary>80. Was ist ticker in Flutter?</summary>
+
+#### Flutter
+
+Ticker in Flutter ist ein Objekt, das bei jedem Animations-Frame einen Callback
+auslöst.
+
+#### Hauptrolle:
+
+1. **Informiert über jeden frame**
+2. **Ermöglicht, Animationen über die Zeit voranzutreiben**
+3. **Wird intern in `AnimationController` verwendet**
+
+#### Einfach gesagt:
+
+Ticker ist ein "Metronom" für Animationen.
+
+#### Praktische Bedeutung:
+
+Wenn man mit `AnimationController` arbeitet, arbeitet man fast immer indirekt
+auch mit ticker.
+
+</details>
+
+<details>
+<summary>81. Was ist `AnimatedBuilder`?</summary>
+
+#### Flutter
+
+`AnimatedBuilder` ist ein Widget, das einen Teil der UI als Reaktion auf
+Änderungen eines animierten Werts neu aufbaut.
+
+#### Wofür es benötigt wird:
+
+1. **Auf `Animation` reagieren**
+2. **Nur den benötigten UI-Teil aktualisieren**
+3. **Explicit animations ohne unnötiges boilerplate aufbauen**
+
+#### Beispiel:
+
+```dart
+AnimatedBuilder(
+  animation: controller,
+  builder: (context, child) {
+    return Transform.scale(
+      scale: controller.value,
+      child: child,
+    );
+  },
+  child: const FlutterLogo(),
+)
+```
+
+#### Vorteil:
+
+Man kann ein `child` übergeben, das nicht bei jedem Frame neu aufgebaut wird.
+
+</details>
+
+<details>
+<summary>82. Was ist `AnimatedContainer`?</summary>
+
+#### Flutter
+
+`AnimatedContainer` ist ein Widget für implicit animation, das Änderungen seiner
+Eigenschaften automatisch animiert.
+
+#### Was es animieren kann:
+
+1. **Größe**
+2. **Farbe**
+3. **Padding**
+4. **Margin**
+5. **Alignment**
+6. **Decoration**
+
+#### Beispiel:
+
+```dart
+AnimatedContainer(
+  duration: const Duration(milliseconds: 300),
+  width: isExpanded ? 200 : 100,
+  color: isExpanded ? Colors.blue : Colors.red,
+)
+```
+
+#### Praktische Bedeutung:
+
+`AnimatedContainer` ist eine der bequemsten Methoden, um schnell flüssige UI
+hinzuzufügen, ohne controller manuell zu steuern.
+
+</details>
+
+<details>
+<summary>83. Was ist der Unterschied zwischen implicit und explicit Animationen?</summary>
+
+#### Flutter
+
+Der Unterschied zwischen implicit und explicit animation liegt im Grad der
+Kontrolle.
+
+#### Implicit animations:
+
+Flutter steuert die Animation selbst, wenn sich Widget-Eigenschaften ändern.
+
+#### Beispiele:
+
+- `AnimatedContainer`
+- `AnimatedOpacity`
+- `AnimatedAlign`
+
+#### Explicit animations:
+
+Der Entwickler steuert die Animation selbst über `AnimationController`.
+
+#### Beispiele:
+
+- `AnimatedBuilder`
+- `FadeTransition`
+- `ScaleTransition`
+
+#### Hauptunterschied:
+
+| Kriterium  | Implicit animations   | Explicit animations       |
+| ---------- | --------------------- | ------------------------- |
+| Kontrolle  | Geringer              | Vollständig               |
+| Komplexität| Niedriger             | Höher                     |
+| Use case   | Einfache UI transitions | Komplexe Custom-Szenarien |
+
+#### Praktisches Fazit:
+
+Für einfache Animationen sollte man mit implicit widgets starten. Für komplexe
+motion-Szenarien und die Synchronisierung mehrerer Animationen braucht man
+explicit animations.
+
+</details>
+
+<details>
+<summary>84. Was ist die Flutter-Architektur?</summary>
+
+#### Flutter
+
+Die Flutter-Architektur besteht aus mehreren Schichten: framework, engine,
+embedder und Plattform.
+
+#### Hauptschichten:
+
+1. **Framework** - Widgets, rendering, gestures, animation, foundation
+2. **Engine** - Rendering, Text, compositing, Skia/graphics integration
+3. **Embedder** - Integration mit Android, iOS, desktop oder web
+4. **Platform** - natives OS und dessen APIs
+
+#### Grundidee:
+
+Flutter umhüllt nicht nur native UI-Komponenten, sondern baut seinen eigenen
+UI-Stack von oben nach unten.
+
+#### Praktische Bedeutung:
+
+Gerade durch diese Architektur bietet Flutter hohe UI-Konsistenz zwischen
+Plattformen, benötigt aber manchmal separate Integration mit nativem Code.
+
+</details>
+
+<details>
+<summary>85. Was ist die rendering pipeline in Flutter?</summary>
+
+#### Flutter
+
+Die rendering pipeline in Flutter ist die Abfolge von Schritten, die die UI von
+der State-Änderung bis zur Darstellung eines Frames auf dem Screen durchläuft.
+
+#### Vereinfacht sieht die Pipeline so aus:
+
+1. **State change**
+2. **Build**
+3. **Layout**
+4. **Paint**
+5. **Compositing**
+6. **Rasterization**
+
+#### Was das bedeutet:
+
+- `build` formt den widget tree
+- `layout` berechnet Größen und Positionen
+- `paint` zeichnet das visuelle Ergebnis
+- die engine wandelt das in einen Frame um
+
+#### Praktische Bedeutung:
+
+Das Verständnis der rendering pipeline hilft beim Debugging von jank,
+unnötigen rebuilds, repainting und Performance-Problemen.
+
+</details>
+
+<details>
+<summary>86. Was sind Widgets, Elements und RenderObjects?</summary>
+
+#### Flutter
+
+Das sind drei zentrale Ebenen des UI-Modells von Flutter.
+
+#### Widgets
+
+Widgets sind immutable UI-Konfigurationen.
+
+#### Elements
+
+Elements sind "lebende" Verknüpfungen zwischen widget tree und render tree.
+
+#### RenderObjects
+
+RenderObjects sind für layout, paint und low-level rendering verantwortlich.
+
+#### Einfach gesagt:
+
+1. **Widget** - was wir anzeigen wollen
+2. **Element** - Verbindung und Lebenszyklus im Baum
+3. **RenderObject** - wie es tatsächlich gemessen und gezeichnet wird
+
+#### Praktische Bedeutung:
+
+Dieses Modell erklärt, warum Flutter die UI effizient aktualisieren kann, ohne
+alles auf low level komplett neu aufzubauen.
+
+</details>
+
+<details>
+<summary>87. Was ist `FlutterEngine`?</summary>
+
+#### Flutter
+
+`FlutterEngine` ist der low-level Teil von Flutter, der für die Ausführung von
+Dart-Code und das Rendern von Frames zuständig ist.
+
+#### Was in seine Verantwortung fällt:
+
+1. **Dart runtime**
+2. **Rendering**
+3. **Text layout**
+4. **Compositing**
+5. **Plattform-Interaktion auf low level**
+
+#### Praktische Bedeutung:
+
+Das Framework bietet eine bequeme API für Widgets, und die engine sorgt dafür,
+dass alles real auf dem Gerätebildschirm funktioniert.
+
+</details>
+
+<details>
+<summary>88. Was ist `WidgetsBinding`?</summary>
+
+#### Flutter
+
+`WidgetsBinding` ist eine binding-Schicht, die das Flutter framework mit der
+engine verbindet und den Lebenszyklus der App auf Widget-Ebene koordiniert.
+
+#### Wofür es benötigt wird:
+
+1. **Framework-Initialisierung**
+2. **Arbeit mit frame callbacks**
+3. **Zugriff auf den binding lifecycle**
+4. **Koordination zwischen framework und engine**
+
+#### Beispiel:
+
+```dart
+WidgetsFlutterBinding.ensureInitialized();
+```
+
+#### Praktische Bedeutung:
+
+Das ist einer der zentralen Mechanismen der Flutter runtime, auch wenn Entwickler
+ihn im typischen Code meist nur indirekt sehen.
+
+</details>
+
+<details>
+<summary>89. Was ist `WidgetsBindingObserver`?</summary>
+
+#### Flutter
+
+`WidgetsBindingObserver` ist ein Interface, mit dem man Änderungen im
+Lebenszyklus der App und andere framework events beobachten kann.
+
+#### Wofür es genutzt wird:
+
+1. **Überwachung von `AppLifecycleState`**
+2. **Reaktion auf `resumed`, `paused`, `inactive`, `detached`**
+3. **Verarbeitung von platform-level Änderungen**
+
+#### Beispiel use case:
+
+- Video stoppen, wenn die App in den Hintergrund geht
+- Daten aktualisieren, wenn die App in den Vordergrund zurückkehrt
+
+#### Praktische Bedeutung:
+
+Das ist ein wichtiges Werkzeug für den Lebenszyklus, besonders in Apps mit
+Medien, Analytics, socket-Verbindungen oder background-sensitiver Logik.
+
+</details>
+
+<details>
+<summary>90. Was sind platform channels?</summary>
+
+#### Flutter
+
+Platform channels sind ein Mechanismus für die Interaktion zwischen Flutter-Code
+in Dart und nativem Plattform-Code, z. B. Kotlin/Java auf Android oder
+Swift/Objective-C auf iOS.
+
+#### Wofür sie benötigt werden:
+
+1. **Zugriff auf native APIs**
+2. **Arbeit mit Plattform-SDKs**
+3. **Integration von Funktionen, die in Flutter nicht direkt vorhanden sind**
+
+#### Haupttypen:
+
+1. **`MethodChannel`**
+2. **`EventChannel`**
+3. **`BasicMessageChannel`**
+
+#### Praktische Bedeutung:
+
+Platform channels werden gebraucht, wenn eine Flutter-App über reine UI
+hinausgeht und mit nativen Gerätefunktionen oder Drittanbieter-SDKs interagieren
+muss.
+
+</details>
+
+<details>
+<summary>91. Was ist tree shaking?</summary>
+
+#### Flutter
+
+Tree shaking ist der Prozess, bei dem ungenutzter Code aus dem finalen build
+entfernt wird.
+
+#### Grundidee:
+
+Wenn bestimmter Code nicht verwendet wird, nimmt der Compiler oder das
+Build-System ihn nicht in den release build auf.
+
+#### Warum das wichtig ist:
+
+1. **Kleinere App-Größe**
+2. **Schnelleres Laden**
+3. **Weniger unnötiger Code in production**
+
+#### Praktische Bedeutung in Flutter:
+
+Tree shaking ist besonders für release builds wichtig, weil es hilft, die Größe
+der Artefakte zu reduzieren und die Effizienz der App-Auslieferung zu
+verbessern.
+
+</details>
+
+<details>
+<summary>92. Wie optimiert man die Performance einer Flutter-App?</summary>
+
+#### Flutter
+
+Performance-Optimierung in Flutter bedeutet vor allem, unnötige rebuilds,
+repaints, teure Berechnungen auf dem UI isolate und übermäßigen Speicherverbrauch
+zu reduzieren.
+
+#### Zentrale Optimierungsbereiche:
+
+1. **Die Anzahl unnötiger rebuilds verringern**
+2. **Schwere CPU-bound Aufgaben nicht im Haupt-isolate ausführen**
+3. **Lazy Lists verwenden**
+4. **`const` nutzen, wo möglich**
+5. **Bilder und Ressourcen optimieren**
+6. **Die App im profile mode profilieren**
+
+#### Praktische Werkzeuge:
+
+- Flutter DevTools
+- Performance overlay
+- Timeline profiling
+- Memory profiler
+
+#### Praktisches Fazit:
+
+Performance in Flutter sollte man nicht "erraten", sondern messen. Gute
+Optimierung beginnt fast immer mit Profiling und nicht mit zufälligen Änderungen.
+
+</details>
+
+<details>
+<summary>93. Wie kann man die Anzahl der Widget-Rebuilds verringern?</summary>
+
+#### Flutter
+
+Um die Anzahl der rebuilds zu verringern, sollte man state lokalisieren und nur
+die Teile des Baums neu aufbauen, die wirklich von Änderungen abhängen.
+
+#### Hauptansätze:
+
+1. **UI in kleinere Widgets aufteilen**
+2. **`const` verwenden**
+3. **State so weit unten wie möglich lokalisieren**
+4. **Keine unnötigen globalen states beobachten**
+5. **Selector-Ansätze verwenden (`select`, selectors, derived state)**
+
+#### Praktisches Denkbeispiel:
+
+Wenn sich nur ein badge im header ändert, muss nicht der ganze Bildschirm neu
+aufgebaut werden.
+
+#### Wichtig:
+
+Ein rebuild ist nicht per se ein Problem. Zum Problem wird es erst, wenn der
+rebuild teuer ist oder zu häufig auftritt.
+
+</details>
+
+<details>
+<summary>94. Was ist `RepaintBoundary`?</summary>
+
+#### Flutter
+
+`RepaintBoundary` ist ein Widget, das einen Teil des render trees in einen
+separaten Neuzeichnungsbereich trennt.
+
+#### Wofür es benötigt wird:
+
+1. **Damit nicht der gesamte Bildschirm neu gezeichnet wird**
+2. **Um expensive paint-Bereiche zu isolieren**
+3. **Um die Performance in komplexen UIs zu verbessern**
+
+#### Grundidee:
+
+Wenn sich ein Teil des Baums häufig ändert und ein anderer nicht, kann
+`RepaintBoundary` helfen, unnötige repaints zu reduzieren.
+
+#### Praktische Nuance:
+
+Man sollte es nicht gedankenlos überall hinzufügen. Wie jede Optimierung ergibt
+es dort Sinn, wo Profiling ein echtes repaint-Problem gezeigt hat.
+
+</details>
+
+<details>
+<summary>95. Wie kann man die Größe einer Flutter-App reduzieren?</summary>
+
+#### Flutter
+
+Die Größe einer Flutter-App wird durch Optimierung von Abhängigkeiten,
+Ressourcen und der release build-Konfiguration reduziert.
+
+#### Hauptansätze:
+
+1. **Unnötige Pakete entfernen**
+2. **Assets und Bilder optimieren**
+3. **Tree shaking verwenden**
+4. **Große SDKs nicht ohne Bedarf einbinden**
+5. **Die Anzahl von Schriften und Lokalisierungen minimieren**
+
+#### Praktische Schritte:
+
+- release statt debug bauen
+- die Build-Zusammensetzung analysieren
+- prüfen, welche Pakete Gewicht hinzufügen
+
+#### Praktisches Fazit:
+
+Die App-Größe wächst oft nicht wegen Flutter selbst, sondern wegen überflüssiger
+Ressourcen, SDKs und Drittanbieter-Abhängigkeiten.
+
+</details>
+
+<details>
+<summary>96. Welche best practices gelten für große Flutter-Apps?</summary>
+
+#### Flutter
+
+Für große Flutter-Apps hängen die wichtigsten best practices mit Architektur,
+Modularität, Testbarkeit und disziplinierter Arbeit mit state zusammen.
+
+#### Zentrale Praktiken:
+
+1. **Feature-basierte oder layered Projektstruktur**
+2. **Klare Trennung von UI-, domain- und data layer**
+3. **Transparentes state management**
+4. **Dependency injection**
+5. **Testabdeckung für kritische Logik**
+6. **Einheitliches design system / theme system**
+7. **Logging, Analytics, error reporting**
+
+#### Zusätzlich:
+
+- god-classes vermeiden
+- network, UI und business logic nicht an einer Stelle vermischen
+- Team-Ansätze standardisieren
+
+#### Praktisches Fazit:
+
+Eine große Flutter-App verliert fast immer ohne architektonische Disziplin,
+selbst wenn sie als "einfacher mobiler Client" gestartet ist.
+
+</details>
+
+<details>
+<summary>97. Welche Testarten gibt es in Flutter?</summary>
+
+#### Flutter
+
+In Flutter werden am häufigsten drei grundlegende Testarten verwendet.
+
+#### 1. Unit tests
+
+Sie testen einzelne Funktionen, Services, use cases und business logic.
+
+#### 2. Widget tests
+
+Sie testen einzelne Widgets und ihr Verhalten in einer isolierten Umgebung.
+
+#### 3. Integration tests
+
+Sie testen reale user flows in einer nahezu vollständigen App.
+
+#### Praktische Bedeutung:
+
+Eine gesunde Teststrategie kombiniert in der Regel alle drei Typen und verlässt
+sich nicht nur auf einen.
+
+</details>
+
+<details>
+<summary>98. Was ist unit testing?</summary>
+
+#### Flutter
+
+Unit testing ist das Testen kleiner, isolierter Codeeinheiten ohne UI und ohne
+Abhängigkeit von der realen App.
+
+#### Was man typischerweise testet:
+
+1. **Funktionen**
+2. **Services**
+3. **Use cases**
+4. **Parsing**
+5. **Validierung**
+
+#### Vorteile:
+
+1. **Schnelle Ausführung**
+2. **Günstiges Debugging**
+3. **Gut geeignet für business logic**
+
+#### Praktisches Fazit:
+
+Wenn Logik ohne Flutter UI getestet werden kann, ist das oft die stabilste und
+kostengünstigste Testart.
+
+</details>
+
+<details>
+<summary>99. Was ist widget testing?</summary>
+
+#### Flutter
+
+Widget testing ist das Testen von Flutter-Widgets in einer kontrollierten
+Umgebung, ohne die vollständige App auf einem realen Gerät zu starten.
+
+#### Was man prüfen kann:
+
+1. **Was das Widget darstellt**
+2. **Wie es auf user interaction reagiert**
+3. **Ob sich die UI nach einer Aktion verändert**
+
+#### Beispiel-Szenario:
+
+- einen Button drücken
+- prüfen, dass neuer Text erscheint
+
+#### Praktische Bedeutung:
+
+Widget tests bieten eine gute Balance zwischen Geschwindigkeit und Nutzen, daher
+gelten sie in Flutter oft als einer der wertvollsten Testtypen.
+
+</details>
+
+<details>
+<summary>100. Was ist integration testing?</summary>
+
+#### Flutter
+
+Integration testing ist das Testen vollständiger oder nahezu vollständiger user
+flows in der App.
+
+#### Was geprüft wird:
+
+1. **Interaktion mehrerer Screens**
+2. **Navigation**
+3. **Arbeit mit realen Services oder deren nahen Ersatzlösungen**
+4. **Vollständiges Verhalten eines Nutzer-Szenarios**
+
+#### Beispiel:
+
+- Login
+- Öffnen einer Liste
+- Wechsel in Details
+- Abschluss einer Nutzeraktion
+
+#### Praktischer Nachteil:
+
+Integration tests sind langsamer, fragiler und teurer als unit- und widget
+tests, deshalb decken sie normalerweise nur kritische Szenarien ab.
+
+</details>
+
+<details>
+<summary>101. Wie testet man ein einzelnes Widget in Flutter?</summary>
+
+#### Flutter
+
+Ein einzelnes Widget wird in Flutter meist mit einem widget test getestet, unter
+Verwendung von `testWidgets`, `WidgetTester` und `pumpWidget()`.
+
+#### Beispiel:
+
+```dart
+testWidgets('counter increments smoke test', (WidgetTester tester) async {
+  await tester.pumpWidget(const MaterialApp(
+    home: CounterPage(),
+  ));
+
+  expect(find.text('0'), findsOneWidget);
+
+  await tester.tap(find.byType(FloatingActionButton));
+  await tester.pump();
+
+  expect(find.text('1'), findsOneWidget);
+});
+```
+
+#### Typischer Ablauf:
+
+1. **Das Widget mit `pumpWidget()` aufbauen**
+2. **Elemente mit `find` suchen**
+3. **Interaction ausführen**
+4. **Das erwartete Ergebnis prüfen**
+
+#### Praktische Bedeutung:
+
+Für die meisten UI-Komponenten ist das der grundlegende und richtige Weg, ihr
+Verhalten zu testen.
+
+</details>
+
+<details>
+<summary>102. Wie führt man HTTP-Anfragen in Flutter aus?</summary>
+
+#### Flutter
+
+HTTP-Anfragen in Flutter werden üblicherweise über Pakete wie `http` oder `dio`
+ausgeführt.
+
+#### Hauptansätze:
+
+1. **Paket `http`** - einfache Basisvariante
+2. **Paket `dio`** - leistungsstärkere Variante mit interceptors, retries und config
+
+#### Beispiel mit `http`:
+
+```dart
+final response = await http.get(
+  Uri.parse('https://example.com/api/users'),
+);
+```
+
+#### Praktischer Ansatz in production:
+
+- separater API client
+- Datenmodelle
+- error handling
+- timeout/retry strategy
+- request-logging
+
+#### Praktisches Fazit:
+
+Der HTTP-Aufruf selbst ist einfach, aber production-ready networking ist bereits
+ein eigener Architektur-Bereich der App.
+
+</details>
+
+<details>
+<summary>103. Welche Datenbanken kann man mit Flutter verwenden?</summary>
+
+#### Flutter
+
+Mit Flutter kann man mehrere Typen lokaler und entfernter Datenbanken verwenden.
+
+#### Lokale Optionen:
+
+1. **SQLite**
+2. **Hive**
+3. **Isar**
+4. **SharedPreferences / key-value storage**
+
+#### Entfernte Optionen:
+
+1. **Firebase Firestore**
+2. **Supabase / PostgreSQL-backed services**
+3. **Jedes backend mit REST- oder GraphQL-API**
+
+#### Praktische Auswahl:
+
+- **Hive / Isar** - schneller lokaler Speicher
+- **SQLite** - strukturierte lokale Daten
+- **Firestore** - real-time cloud data
+
+#### Praktisches Fazit:
+
+Die Wahl der Datenbank hängt nicht von Flutter ab, sondern vom Datenmodell, von
+offline-first Anforderungen, Synchronisation und der Komplexität der Domain.
+
+</details>
+
+<details>
+<summary>104. Was sind Flutter plugins?</summary>
+
+#### Flutter
+
+Flutter plugins sind Pakete, die eine Flutter-API für den Zugriff auf native
+Plattformfunktionen bereitstellen.
+
+#### Was sie ermöglichen:
+
+1. **Zugriff auf die Kamera**
+2. **Zugriff auf Geolokalisierung**
+3. **Push notifications**
+4. **Bluetooth, sensors, storage, permissions**
+
+#### Grundidee:
+
+Ein Plugin hat eine Dart-API und Plattform-Implementierungen für Android, iOS
+und manchmal weitere Plattformen.
+
+#### Praktische Bedeutung:
+
+Plugins ermöglichen, nicht jedes Mal platform channels manuell zu schreiben,
+sondern fertige Integrationen zu nutzen.
+
+</details>
+
+<details>
+<summary>105. Wie integriert man Flutter in eine bestehende native App?</summary>
+
+#### Flutter
+
+Flutter kann als separates Modul in eine bestehende Android- oder iOS-App
+integriert werden.
+
+#### Grundidee:
+
+Flutter muss nicht zwingend "die ganze App" sein. Es kann nur in einzelne
+Screens oder Features eingebettet werden.
+
+#### So funktioniert es typischerweise:
+
+1. **Ein Flutter module wird erstellt**
+2. **Die native App bindet dieses Modul ein**
+3. **Bestimmte Screens werden über `FlutterActivity`, `FlutterFragment` oder
+   iOS integration geöffnet**
+
+#### Praktische Szenarien:
+
+- schrittweise Migration einer nativen App zu Flutter
+- Start eines neuen Features in Flutter ohne komplettes Umschreiben
+
+#### Praktisches Fazit:
+
+Der Add-to-app Ansatz ist dann nützlich, wenn das Business nicht bereit ist,
+alles neu zu schreiben, aber Flutter schrittweise im Produkt einsetzen will.
+
+</details>
+
+<details>
+<summary>106. Wie implementiert man plattformabhängigen Code in Flutter?</summary>
+
+#### Flutter
+
+Plattformabhängiger Code wird in Flutter je nach Aufgabenebene auf mehrere Arten
+umgesetzt.
+
+#### Hauptansätze:
+
+1. **Platform channels** - wenn nativer Code benötigt wird
+2. **Fertige plugins** - wenn es bereits ein Paket für die benötigte Funktion gibt
+3. **`Platform.isAndroid` / `Platform.isIOS`** - für plattformspezifische Logikzweige
+4. **`defaultTargetPlatform`** - für UI-Verhalten
+
+#### Beispiel:
+
+```dart
+if (Platform.isIOS) {
+  // iOS-specific logic
+} else if (Platform.isAndroid) {
+  // Android-specific logic
+}
+```
+
+#### Praktisches Fazit:
+
+Wenn es ein fertiges, verlässliches plugin gibt, ist es besser, dieses zu
+verwenden. Wenn nicht, schreibt man einen platform channel oder ein eigenes
+plugin.
+
+</details>
