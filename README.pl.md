@@ -3709,3 +3709,201 @@ Integration tests są wolniejsze, bardziej kruche i droższe niż unit i widget
 tests, dlatego zwykle pokrywają właśnie krytyczne scenariusze.
 
 </details>
+
+<details>
+<summary>101. Jak przetestować pojedynczy widget we Flutterze?</summary>
+
+#### Flutter
+
+Pojedynczy widget we Flutterze zwykle testuje się przez widget test z użyciem
+`testWidgets`, `WidgetTester` i `pumpWidget()`.
+
+#### Przykład:
+
+```dart
+testWidgets('counter increments smoke test', (WidgetTester tester) async {
+  await tester.pumpWidget(const MaterialApp(
+    home: CounterPage(),
+  ));
+
+  expect(find.text('0'), findsOneWidget);
+
+  await tester.tap(find.byType(FloatingActionButton));
+  await tester.pump();
+
+  expect(find.text('1'), findsOneWidget);
+});
+```
+
+#### Typowy proces:
+
+1. **Zbudować widget przez `pumpWidget()`**
+2. **Znaleźć elementy przez `find`**
+3. **Wykonać interaction**
+4. **Sprawdzić oczekiwany wynik**
+
+#### Sens praktyczny:
+
+Dla większości komponentów UI to bazowy i poprawny sposób sprawdzania zachowania.
+
+</details>
+
+<details>
+<summary>102. Jak wykonywać HTTP requesty we Flutterze?</summary>
+
+#### Flutter
+
+HTTP requesty we Flutterze zwykle wykonuje się przez pakiety typu `http` albo
+`dio`.
+
+#### Główne podejścia:
+
+1. **Pakiet `http`** - prosty bazowy wariant
+2. **Pakiet `dio`** - bardziej rozbudowany wariant z interceptors, retries i config
+
+#### Przykład z `http`:
+
+```dart
+final response = await http.get(
+  Uri.parse('https://example.com/api/users'),
+);
+```
+
+#### Praktyczne podejście na production:
+
+- oddzielny API client
+- modele danych
+- error handling
+- timeout/retry strategy
+- logowanie requestów
+
+#### Praktyczny wniosek:
+
+Samo wywołanie HTTP jest proste, ale production-ready networking to już osobna
+strefa architektoniczna aplikacji.
+
+</details>
+
+<details>
+<summary>103. Jakich baz danych można używać z Flutterem?</summary>
+
+#### Flutter
+
+Z Flutterem można używać kilku typów lokalnych i zdalnych baz danych.
+
+#### Lokalne warianty:
+
+1. **SQLite**
+2. **Hive**
+3. **Isar**
+4. **SharedPreferences / key-value storage**
+
+#### Zdalne warianty:
+
+1. **Firebase Firestore**
+2. **Supabase / usługi oparte na PostgreSQL**
+3. **Dowolny backend z REST albo GraphQL API**
+
+#### Praktyczny wybór:
+
+- **Hive / Isar** - szybki lokalny storage
+- **SQLite** - ustrukturyzowane lokalne dane
+- **Firestore** - real-time cloud data
+
+#### Praktyczny wniosek:
+
+Wybór bazy zależy nie od Fluttera, ale od modelu danych, wymagań offline-first,
+synchronizacji i złożoności domeny.
+
+</details>
+
+<details>
+<summary>104. Czym są Flutter plugins?</summary>
+
+#### Flutter
+
+Flutter plugins to pakiety, które dają Flutter API do dostępu do natywnych
+możliwości platformy.
+
+#### Co dają:
+
+1. **Dostęp do kamery**
+2. **Dostęp do geolokalizacji**
+3. **Push notifications**
+4. **Bluetooth, sensors, storage, permissions**
+
+#### Główna idea:
+
+Plugin ma Dart API i platformowe implementacje dla Android, iOS, a czasem też
+innych platform.
+
+#### Sens praktyczny:
+
+Plugins pozwalają nie pisać platform channels ręcznie za każdym razem, tylko
+używać gotowej integracji.
+
+</details>
+
+<details>
+<summary>105. Jak zintegrować Flutter z istniejącą natywną aplikacją?</summary>
+
+#### Flutter
+
+Flutter można zintegrować z istniejącą aplikacją Android albo iOS jako oddzielny
+moduł.
+
+#### Główna idea:
+
+Flutter nie musi być "całą aplikacją". Można go wbudować tylko w wybrane ekrany
+albo feature’y.
+
+#### Jak to zwykle działa:
+
+1. **Tworzy się Flutter module**
+2. **Natywna aplikacja podłącza ten moduł**
+3. **Wybrane ekrany otwierają się przez `FlutterActivity`, `FlutterFragment` albo
+   iOS integration**
+
+#### Praktyczne scenariusze:
+
+- stopniowa migracja natywnej aplikacji na Flutter
+- uruchomienie nowej feature’y na Flutterze bez pełnego przepisywania
+
+#### Praktyczny wniosek:
+
+Podejście add-to-app jest przydatne wtedy, gdy biznes nie jest gotowy przepisać
+wszystkiego, ale chce stopniowo wykorzystać Fluttera w produkcie.
+
+</details>
+
+<details>
+<summary>106. Jak realizować kod zależny od platformy we Flutterze?</summary>
+
+#### Flutter
+
+Kod zależny od platformy we Flutterze realizuje się kilkoma sposobami, zależnie
+od poziomu zadania.
+
+#### Główne podejścia:
+
+1. **Platform channels** - gdy potrzebny jest natywny kod
+2. **Gotowe plugins** - gdy istnieje już pakiet dla potrzebnej funkcji
+3. **`Platform.isAndroid` / `Platform.isIOS`** - dla platformowych gałęzi logiki
+4. **`defaultTargetPlatform`** - dla zachowania UI
+
+#### Przykład:
+
+```dart
+if (Platform.isIOS) {
+  // iOS-specific logic
+} else if (Platform.isAndroid) {
+  // Android-specific logic
+}
+```
+
+#### Praktyczny wniosek:
+
+Jeśli jest gotowy sprawdzony plugin, lepiej go użyć. Jeśli go nie ma, wtedy
+pisze się platform channel albo własny plugin.
+
+</details>
